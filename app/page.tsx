@@ -1,5 +1,7 @@
 'use client';
 
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useMQTTData } from '@/hooks/useMQTTData';
 import GeneratorStatus from '@/components/dashboard/GeneratorStatus';
 import BatteryStatus from '@/components/dashboard/BatteryStatus';
@@ -13,11 +15,14 @@ import AlertsPanel from '@/components/dashboard/AlertsPanel';
 import LoadingOverlay from '@/components/dashboard/LoadingOverlay';
 import Image from 'next/image';
 
-export default function DashboardPage() {
-  const { data, isConnected, isInitialLoading, connectionStatus, lastUpdate, reconnect } = useMQTTData();
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const currentDeviceId = searchParams.get('device_id') || 'solar_system_001';
+
+  const { data, isConnected, isInitialLoading, connectionStatus, lastUpdate, reconnect } = useMQTTData({ deviceId: currentDeviceId });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       {/* Loading Overlay */}
       {isInitialLoading && (
         <LoadingOverlay
@@ -33,6 +38,8 @@ export default function DashboardPage() {
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900">Giventech EMS Dashboard</h1>
               <p className="text-sm text-gray-500 mt-1">Real-time EMS Monitoring and Control System</p>
+              {/* 💡 현재 관제 중인 기기 표시 */}
+              <p className="text-sm font-semibold text-blue-600 mt-1">Target Device: {currentDeviceId}</p>
             </div>
             <div className="flex-shrink-0 mx-8">
               <Image
@@ -62,34 +69,34 @@ export default function DashboardPage() {
 
       {/* Main Dashboard Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Top Row - Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <InverterStatus data={data} />
           <BatteryStatus data={data} />
           <SolarOverview data={data} />
           <GeneratorStatus data={data} />
         </div>
-
-        {/* Middle Row - Environment and Alerts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          <div>
-            <IndoorSensorCard data={data} />
-          </div>
-          <div>
-            <EnvironmentCard />
-          </div>
-          <div>
-            <AlertsPanel />
-          </div>
+          <div><IndoorSensorCard data={data} /></div>
+          <div><EnvironmentCard /></div>
+          <div><AlertsPanel /></div>
         </div>
-
-        {/* Bottom Row - Energy Summary and Carbon Savings */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <EnergySummary data={data} />
           <CarbonSavings data={data} />
         </div>
       </main>
+    </>
+  );
+}
 
+// 💡 Next.js App Router에서 useSearchParams를 사용할 때는 Suspense로 감싸주어야 합니다.
+export default function DashboardPage() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Suspense fallback={<div>Loading dashboard...</div>}>
+        <DashboardContent />
+      </Suspense>
+      
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

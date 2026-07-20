@@ -23,7 +23,7 @@ interface MQTTDataState {
 const MAX_HISTORY_POINTS = 288; // 24 hours * 12 (5-minute intervals)
 const HISTORY_INTERVAL = 300000; // 5 minutes in milliseconds
 
-export function useMQTTDataEnhanced() {
+export function useMQTTDataEnhanced(deviceId?: string) {
   const [state, setState] = useState<MQTTDataState>({
     data: null,
     history: [],
@@ -124,6 +124,11 @@ export function useMQTTDataEnhanced() {
     let environmentData: { temperature: number; humidity: number } | null = null;
 
     const unsubscribeInverter = mqttService.subscribe('solar/inverter/status', (data: MQTTInverterData) => {
+
+      if (deviceId && data.device_id !== deviceId) {
+        return;
+      }
+
       const realtimeData = mqttService.transformToRealtimeData(data, environmentData);
 
       setState(prev => ({
@@ -138,6 +143,11 @@ export function useMQTTDataEnhanced() {
     });
 
     const unsubscribeEnvironment = mqttService.subscribe<{ temperature: number; humidity: number; device_id?: string }>('solar/environment/data', (data) => {
+
+      if (deviceId && data.device_id !== deviceId) {
+        return;
+      }
+
       environmentData = {
         temperature: data.temperature,
         humidity: data.humidity,
@@ -165,7 +175,7 @@ export function useMQTTDataEnhanced() {
         clearInterval(historyTimerRef.current);
       }
     };
-  }, [addToHistory]);
+  }, [addToHistory, deviceId]);
 
   // Manual reconnect function
   const reconnect = useCallback(async () => {
