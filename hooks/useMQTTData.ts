@@ -41,6 +41,7 @@ export function useMQTTData(options: UseMQTTDataOptions = {}) {
     const setupSubscriptions = () => {
 
       const inverterTopic = options.deviceId ? `solar/inverter/status/${options.deviceId}` : 'solar/inverter/status/+';
+      console.log("👉 [수신 토픽 확인]:", inverterTopic);
       const envTopic = options.deviceId ? `solar/environment/data/${options.deviceId}` : 'solar/environment/data/+';
 
       // Subscribe to inverter status
