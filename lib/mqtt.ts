@@ -94,8 +94,8 @@ class MQTTService {
       this.reconnectAttempts = 0;
 
       // Subscribe to topics
-      this.client?.subscribe('solar/inverter/status', { qos: 0 });
-      this.client?.subscribe('solar/environment/data', { qos: 0 });
+      // this.client?.subscribe('solar/inverter/status', { qos: 0 });
+      // this.client?.subscribe('solar/environment/data', { qos: 0 });
 
       console.log('✅ Subscribed to topics: solar/inverter/status, solar/environment/data');
     });
