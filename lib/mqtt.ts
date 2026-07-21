@@ -184,15 +184,32 @@ class MQTTService {
   public subscribe(topic: string, callback: (data: any) => void) {
     if (!this.callbacks.has(topic)) {
       this.callbacks.set(topic, []);
+      
+      if (this.client) {
+        this.client.subscribe(topic, { qos: 0 }, (err) => {
+          if (err) {
+            console.error(`❌ 구독 실패: ${topic}`, err);
+          } else {
+            console.log(`📡 브로커 구독 완료: ${topic}`);
+          }
+        });
+      }
     }
+    
     this.callbacks.get(topic)?.push(callback);
 
-    // Return unsubscribe function
     return () => {
       const callbacks = this.callbacks.get(topic) || [];
       const index = callbacks.indexOf(callback);
       if (index > -1) {
         callbacks.splice(index, 1);
+      }
+      
+      if (this.callbacks.get(topic)?.length === 0) {
+        if (this.client) {
+          this.client.unsubscribe(topic);
+        }
+        this.callbacks.delete(topic);
       }
     };
   }
