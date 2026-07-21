@@ -122,8 +122,11 @@ export function useMQTTDataEnhanced(deviceId?: string) {
   // Subscribe to MQTT topics
   useEffect(() => {
     let environmentData: { temperature: number; humidity: number } | null = null;
+    const inverterTopic = deviceId ? `solar/inverter/status/${deviceId}` : 'solar/inverter/status/+';
+      
+    const envTopic = deviceId ? `solar/environment/data/${deviceId}` : 'solar/environment/data/+';
 
-    const unsubscribeInverter = mqttService.subscribe('solar/inverter/status', (data: MQTTInverterData) => {
+    const unsubscribeInverter = mqttService.subscribe(inverterTopic, (data: MQTTInverterData) => {
 
       if (deviceId && data.device_id !== deviceId) {
         return;
@@ -142,7 +145,7 @@ export function useMQTTDataEnhanced(deviceId?: string) {
       addToHistory(realtimeData);
     });
 
-    const unsubscribeEnvironment = mqttService.subscribe<{ temperature: number; humidity: number; device_id?: string }>('solar/environment/data', (data) => {
+    const unsubscribeEnvironment = mqttService.subscribe<{ temperature: number; humidity: number; device_id?: string }>(envTopic, (data) => {
 
       if (deviceId && data.device_id !== deviceId) {
         return;

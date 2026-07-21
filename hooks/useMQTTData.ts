@@ -39,8 +39,12 @@ export function useMQTTData(options: UseMQTTDataOptions = {}) {
     }, 10000); // After 10 seconds, show "waiting" status
 
     const setupSubscriptions = () => {
+
+      const inverterTopic = options.deviceId ? `solar/inverter/status/${options.deviceId}` : 'solar/inverter/status/+';
+      const envTopic = options.deviceId ? `solar/environment/data/${options.deviceId}` : 'solar/environment/data/+';
+
       // Subscribe to inverter status
-      unsubscribeInverter = mqttService.subscribe('solar/inverter/status', (inverterData) => {
+      unsubscribeInverter = mqttService.subscribe(inverterTopic, (inverterData) => {
         console.log('Received inverter data:', inverterData);
 
         // Check if this is for our device
@@ -59,7 +63,7 @@ export function useMQTTData(options: UseMQTTDataOptions = {}) {
       });
 
       // Subscribe to environment data
-      unsubscribeEnvironment = mqttService.subscribe('solar/environment/data', (envData) => {
+      unsubscribeEnvironment = mqttService.subscribe(envTopic, (envData) => {
         console.log('Received environment data:', envData);
 
         // Check if this is for our device
